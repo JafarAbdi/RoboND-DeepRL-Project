@@ -260,18 +260,18 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr& contacts) {
     /
     */
 
-    /*
+    bool collisionCheck = (contacts->contact(i).collision1() == COLLISION_ITEM);
 
     if (collisionCheck)
     {
-            rewardHistory = None;
+            rewardHistory = REWARD_WIN;
 
-            newReward  = None;
-            endEpisode = None;
+            newReward  = true;
+            endEpisode = true;
 
             return;
     }
-    */
+
   }
 }
 
