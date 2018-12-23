@@ -344,8 +344,7 @@ bool ArmPlugin::updateAgent() {
   is even or odd
   /
   */
-  float joint =
-      ref[action] + actionJointDelta;
+  float joint = ref[action] + actionJointDelta;
   // TODO - Set joint position based on whether action is even or odd.
 
   // limit the joint to the specified range
@@ -538,45 +537,42 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo) {
     /
     */
 
-    if(gripBBox.min.z < groundContact)
-    {
+    if (gripBBox.min.z < groundContact) {
+      if (DEBUG) {
+        printf("GROUND CONTACT, EOE\n");
+      }
 
-            if(DEBUG){printf("GROUND CONTACT, EOE\n");}
-
-            rewardHistory = REWARD_LOSS;
-            newReward     = true;
-            endEpisode    = ture;
+      rewardHistory = REWARD_LOSS;
+      newReward = true;
+      endEpisode = ture;
     }
-
 
     /*
     / TODO - Issue an interim reward based on the distance to the object
     /
     */
 
-    /*
-    if(!checkGroundContact)
-    {
-            const float distGoal = 0; // compute the reward from distance to the
-    goal
+    if (!(gripBBox.min.z < groundContact)) {
+      const float distGoal = BoxDistance(
+          model->GetBoundingBox(), propBBox);  // compute the reward from distance to the goal
 
-            if(DEBUG){printf("distance('%s', '%s') = %f\n",
-    gripper->GetName().c_str(), prop->model->GetName().c_str(), distGoal);}
+      if (DEBUG) {
+        printf("distance('%s', '%s') = %f\n", gripper->GetName().c_str(),
+               prop->model->GetName().c_str(), distGoal);
+      }
 
+      if (episodeFrames > 1) {
+        const float distDelta = lastGoalDistance - distGoal;
 
-            if( episodeFrames > 1 )
-            {
-                    const float distDelta  = lastGoalDistance - distGoal;
+        // compute the smoothed moving average of the delta of the distance to
+        // the goal
+        avgGoalDelta = avgGoalDelta * LEARNING_RATE + distDelta * (1 - LEARNING_RATE);
+        rewardHistory = REWARD_LOSS;
+        newReward = true;
+      }
 
-                    // compute the smoothed moving average of the delta of the
-    distance to the goal
-                    avgGoalDelta  = 0.0;
-                    rewardHistory = None;
-                    newReward     = None;
-            }
-
-            lastGoalDistance = distGoal;
-    } */
+      lastGoalDistance = distGoal;
+    }
   }
 
   // issue rewards and train DQN
