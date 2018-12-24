@@ -100,7 +100,7 @@ ArmPlugin::ArmPlugin()
   inputBufferSize = 0;
   inputRawWidth = 0;
   inputRawHeight = 0;
-  actionJointDelta = 0.15f;
+  actionJointDelta = 0.075f;// 0.15f;
   actionVelDelta = 0.1f;
   maxEpisodeLength = 100;
   episodeFrames = 0;
@@ -262,6 +262,8 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr& contacts) {
     */
 
     bool collisionCheck = (contacts->contact(i).collision1() == COLLISION_ITEM);
+    //bool collisionCheck = strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM);
+    //bool collisionCheck = (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 1);
 
     if (collisionCheck) {
       rewardHistory = REWARD_WIN;
