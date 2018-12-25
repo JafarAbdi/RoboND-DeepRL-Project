@@ -27,7 +27,7 @@
 #define DEBUG_DQN false
 #define GAMMA 0.9f
 #define EPS_START 0.9f
-#define EPS_END 0.05f
+#define EPS_END 0.0005f
 #define EPS_DECAY 200
 
 /*
@@ -37,14 +37,16 @@
 
 #define INPUT_WIDTH 64
 #define INPUT_HEIGHT 64
-#define OPTIMIZER "RMSprop"
-#define LEARNING_RATE 0.01f
+//#define OPTIMIZER "RMSprop"
+#define OPTIMIZER "Adam"
+#define LEARNING_RATE 0.001f
 #define REPLAY_MEMORY 10000
 #define BATCH_SIZE 8
-#define USE_LSTM true
+#define USE_LSTM false // WHY ?
 #define LSTM_SIZE 32
 #define NUM_ACTIONS (2 * DOF)
-#define ALPHA 0.25f
+#define ALPHA 0.2f
+#define avgGoalDeltaK 5.0f
 /*
 / TODO - Define Reward Parameters
 /
@@ -67,7 +69,8 @@
 #define ANIMATION_STEPS 1000
 
 // Set Debug Mode
-#define DEBUG true
+#define DEBUG false
+//#define DEBUG true
 
 // Lock base rotation DOF (Add dof in header file if off)
 #define LOCKBASE true
@@ -100,7 +103,7 @@ ArmPlugin::ArmPlugin()
   inputBufferSize = 0;
   inputRawWidth = 0;
   inputRawHeight = 0;
-  actionJointDelta = 0.075f;// 0.15f;
+  actionJointDelta = 0.075f;//0.15f;
   actionVelDelta = 0.1f;
   maxEpisodeLength = 100;
   episodeFrames = 0;
@@ -264,8 +267,9 @@ void ArmPlugin::onCollisionMsg(ConstContactsPtr& contacts) {
     bool collisionCheck = (contacts->contact(i).collision1() == COLLISION_ITEM);
     //bool collisionCheck = strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM);
     //bool collisionCheck = (strcmp(contacts->contact(i).collision1().c_str(), COLLISION_ITEM) == 1);
-
-    if (collisionCheck) {
+    bool gripCollisionCheck = (contacts->contact(i).collision2() == COLLISION_POINT);
+    if (collisionCheck && gripCollisionCheck) {
+      
       rewardHistory = REWARD_WIN;
 
       newReward = true;
@@ -570,7 +574,7 @@ void ArmPlugin::OnUpdate(const common::UpdateInfo& updateInfo) {
         // the goal
         avgGoalDelta =
             avgGoalDelta * ALPHA + distDelta * (1 - ALPHA);
-        rewardHistory = avgGoalDelta * 10.0; // Need change
+        rewardHistory = avgGoalDelta * avgGoalDeltaK; // Need change
         newReward = true;
       }
 
